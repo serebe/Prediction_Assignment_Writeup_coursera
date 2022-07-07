@@ -1,0 +1,12 @@
+getwd()
+dir()
+train=read.csv(file = file.choose(),header = T)
+test= read.csv(file = file.choose(),header = T)
+summary(train)
+str(train)
+datos<-apply(X = is.na(train), MARGIN = 2, FUN = sum)
+aplicacion<-which(datos>0)
+train_good<-train[,-aplicacion]
+test_good<-test[,-aplicacion]
+apply(X = is.na(train_good), MARGIN = 2, FUN = sum)
+apply(X = is.na(test_good), MARGIN = 2, FUN = sum)
