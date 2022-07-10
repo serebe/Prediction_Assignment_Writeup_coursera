@@ -1,0 +1,90 @@
+---
+title: "Final_work_coursera"
+author: "Sebastian Restrepo Betancur"
+date: '2022-07-09'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary model
+
+In order not to cover too much, only the result of the machine learning process will be seen below, along with the selected model, the predictions obtained, along with the titles and codes for the selected model, at the end the questions will be answered:
+
+
+# reading the data
+
+```{r}
+# install.packages("caret")
+library(caret)
+# install.packages("dplyr")
+library(dplyr)
+# install.packages("tidyverse")
+library(tidyverse)
+# install.packages("recipes")
+library(recipes)
+train_prove=read.csv(file = "datos/pml-training.csv",header = T)
+testing_prove= read.csv(file = "datos/pml-testing.csv",header = T)
+```
+
+```{r}
+summary(train_prove)
+```
+```{r}
+# remove zero variance values
+Nearzero <-nearZeroVar(train_prove)
+train_prove<-train_prove[,-Nearzero]
+testing_prove <-testing_prove[,-Nearzero]
+dim(train_prove)
+dim(testing_prove)
+```
+```{r}
+# remove variables that are mostly NA, and ID labels
+train_prove[train_prove == ""] <- NA
+train_prove[train_prove == "#DIV/0!"] <- NA
+which(colSums(is.na(train_prove))>0)
+train_prove <- train_prove[,colSums(is.na(train_prove))==0]
+testing_prove <- testing_prove[,colSums(is.na(testing_prove))==0]
+train_prove$X <- NULL
+train_prove$user_name <- NULL
+train_prove$raw_timestamp_part_1<-NULL
+train_prove$raw_timestamp_part_2<-NULL
+train_prove$cvtd_timestamp<-NULL
+train_prove$num_window<-NULL
+testing_prove$X <- NULL
+testing_prove$user_name <- NULL
+testing_prove$raw_timestamp_part_1<-NULL
+testing_prove$raw_timestamp_part_2<-NULL
+testing_prove$cvtd_timestamp<-NULL
+testing_prove$num_window<-NULL
+```
+
+# Model
+
+```{r}
+## Convert to dataframe
+train_prove<-as.data.frame(unclass(train_prove),stringsAsFactors = TRUE)
+```
+
+```{r}
+## Put the model
+fitControl<-trainControl(method="cv", number = 10, allowParallel=TRUE)
+modelspecial<-train(classe ~ ., data=train_prove, method="rf", trControl=fitControl, ntree=50)
+modelspecial$results 
+```
+
+```{r}
+# predict
+prediction<-predict(modelspecial,train_prove)
+confusionMatrix(prediction,train_prove$class)
+pred<-predict(modelspecial,testing_prove)
+pred
+```
+
+# Answers:
+
+## how you built your model, how you used cross-validation, what you think the expected out-of-sample error is, and why you made the decisions you did.
+
+First of all, a descriptive analysis was made, then we looked at which variables are essential when making a decision, we searched among different classification models belonging to the caret library, among which the multinomial logistic models stand out, among others, also Decision trees were used, finally by **accuracy** it was decided that the model using randomforest was the best to explain the data, decision made in previous points.
